@@ -4,12 +4,12 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserService } from '../user/user.service';
 import { CreateUserDto } from 'src/schemas/userSchemas';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { AppConfigService } from '../configuration/appConfig.service';
 import { LoginUserDto } from 'src/schemas/authSchemas';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
@@ -24,9 +24,7 @@ export class AuthService {
     );
 
     if (existingUser) {
-      throw new ConflictException(
-        'User with the same email has already exists',
-      );
+      throw new ConflictException('User with the same email  already exists');
     }
 
     const hashed_password = await bcrypt.hash(

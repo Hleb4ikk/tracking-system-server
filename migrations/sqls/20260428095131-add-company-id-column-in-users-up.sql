@@ -1,0 +1,5 @@
+ALTER TABLE users
+ADD COLUMN company_id UUID,
+ADD CONSTRAINT fk_company
+FOREIGN KEY (company_id) REFERENCES companies(id)
+ON DELETE SET NULL;
