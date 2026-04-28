@@ -22,16 +22,16 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const { user_id } = jwt.verify(
+      const { userId } = jwt.verify(
         accessToken,
         this.configService.jwt.accessSecretValue,
-      ) as { user_id?: string };
+      ) as { userId?: string };
 
-      if (!user_id) {
-        throw new UnauthorizedException('Invalid token payload');
+      if (!userId) {
+        throw new Error();
       }
 
-      request.userId = user_id;
+      request.userId = userId;
 
       return true;
     } catch {
