@@ -3,6 +3,7 @@ import { PostgresService } from '../database/postgres.service';
 import { ICompanyRepository } from 'src/interfaces/ICompanyRepository';
 import { Company } from 'src/types/Company';
 import { CreateCompanyDto, UpdateCompanyDto } from 'src/schemas/companySchema';
+import { ROLES } from 'src/enums/roles';
 
 @Injectable()
 export class CompanyRepository implements ICompanyRepository {
@@ -41,8 +42,8 @@ export class CompanyRepository implements ICompanyRepository {
       const companyId = result.rows[0].id;
 
       await this.postgresService.query(
-        'UPDATE users SET company_id = $1 WHERE id = $2',
-        [companyId, ownerId],
+        'INSERT INTO positions(company_id, user_id, role) VALUES ($1, $2, $3);',
+        [companyId, ownerId, ROLES.CO_FOUNDER],
       );
 
       await this.postgresService.query('COMMIT;');

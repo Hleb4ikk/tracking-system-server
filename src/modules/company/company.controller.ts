@@ -18,6 +18,9 @@ import {
 } from 'src/schemas/companySchema';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { type User } from 'src/types/User';
+import { CompanyRoles } from 'src/decorators/company-roles.decorator';
+import { CompanyRolesGuard } from 'src/guards/roles.guard';
+import { ROLES } from 'src/enums/roles';
 
 @Controller('/companies')
 @UseGuards(AuthGuard)
@@ -25,7 +28,9 @@ export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}
 
   @Get()
-  async getUserCompany(@CurrentUser('company_id') companyId) {
+  @CompanyRoles()
+  @UseGuards(CompanyRolesGuard)
+  async getUserCompany(@CurrentUser('company_id') companyId: string) {
     const company = await this.companyService.getCompanyById(companyId);
 
     return { company };
@@ -45,6 +50,8 @@ export class CompanyController {
   }
 
   @Patch()
+  @CompanyRoles([ROLES.CO_FOUNDER])
+  @UseGuards(CompanyRolesGuard)
   async updateCompany(
     @Body(new ZodValidationPipe(updateCompanySchema))
     updateCompanyDto: UpdateCompanyDto,
@@ -58,6 +65,8 @@ export class CompanyController {
   }
 
   @Delete()
+  @CompanyRoles([ROLES.CO_FOUNDER])
+  @UseGuards(CompanyRolesGuard)
   async deleteUserCompany(@CurrentUser('company_id') companyId: string) {
     await this.companyService.deleteCompanyById(companyId);
     return { message: 'Company was deleted successfully!' };
