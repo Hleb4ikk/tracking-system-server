@@ -60,7 +60,10 @@ export class CompanyService {
         updateCompanyDto.title,
       );
 
-      if (toBeConflictedCompany) {
+      if (
+        toBeConflictedCompany &&
+        !(toBeConflictedCompany.id === existingCompany.id)
+      ) {
         throw new ConflictException(
           'Company with the same title already exists. Choose another',
         );

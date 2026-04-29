@@ -1,11 +1,23 @@
-export interface User {
+import { ROLES } from 'src/enums/roles';
+
+export type User = {
   id: string;
   email: string;
   username: string;
   name: string;
   surname: string;
-  company_id: string | null;
-}
-export interface UserWithPassword extends User {
+  isAdmin: boolean;
+} & (
+  | {
+      company_id: string;
+      role: ROLES;
+    }
+  | {
+      company_id: null;
+      role: null;
+    }
+);
+
+export type UserWithPassword = User & {
   hashed_password: string;
-}
+};
