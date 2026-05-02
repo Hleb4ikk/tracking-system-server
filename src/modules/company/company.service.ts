@@ -12,7 +12,7 @@ import { User } from 'src/types/User';
 export class CompanyService {
   constructor(private readonly companyRepository: CompanyRepository) {}
 
-  async getCompanyById(company_id: string): Promise<Company | null> {
+  async getCompanyById(company_id: string): Promise<Company> {
     const company = await this.companyRepository.findCompanyById(company_id);
 
     if (!company) {

@@ -9,6 +9,6 @@ import { UserModule } from '../user/user.module';
   imports: [DatabaseModule, UserModule],
   controllers: [CompanyController],
   providers: [CompanyService, CompanyRepository],
-  exports: [CompanyService],
+  exports: [CompanyService, CompanyRepository],
 })
 export class CompanyModule {}
