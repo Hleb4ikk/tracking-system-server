@@ -68,8 +68,11 @@ export class InvitationController {
   @Delete('/:id')
   @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
   @UseGuards(CompanyRolesGuard)
-  async deleteInvitation(@Param('id', ParseUUIDPipe) invitationId: string) {
-    await this.invitationService.deleteInvitation(invitationId);
+  async deleteInvitation(
+    @CurrentUser('company_id') companyId: string,
+    @Param('id', ParseUUIDPipe) invitationId: string,
+  ) {
+    await this.invitationService.deleteInvitation(companyId, invitationId);
     return { message: 'Invitation successfully deleted!' };
   }
 
