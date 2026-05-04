@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CompanyModule } from './modules/company/company.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { MembershipModule } from './modules/membership/membership.module';
+import { VehicleModule } from './modules/vehicle/vehicle.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MembershipModule } from './modules/membership/membership.module';
     CompanyModule,
     InvitationModule,
     MembershipModule,
+    VehicleModule,
   ],
   controllers: [AppController],
   providers: [],
