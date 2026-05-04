@@ -6,6 +6,7 @@ import { CompanyModule } from './modules/company/company.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { VehicleModule } from './modules/vehicle/vehicle.module';
+import { SupplyChainModule } from './modules/supply-chain/supply-chain.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { VehicleModule } from './modules/vehicle/vehicle.module';
     InvitationModule,
     MembershipModule,
     VehicleModule,
+    SupplyChainModule,
   ],
   controllers: [AppController],
   providers: [],
