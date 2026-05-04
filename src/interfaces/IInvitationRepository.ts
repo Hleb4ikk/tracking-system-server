@@ -13,7 +13,7 @@ export interface IInvitationRepository {
   deleteInvitation(invitationId: string): Promise<void>;
   acceptInvitation(invitationId: string, userId: string);
   findInvitations(
-    offset: number,
+    limit: number,
     page: number,
     filters?: InvitationFilters,
   ): Promise<Invitation[]>;

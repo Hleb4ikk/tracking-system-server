@@ -17,8 +17,7 @@ export class ZodValidationPipe<S extends z.ZodTypeAny>
     try {
       const parsedValue = this.schema.parse(value);
       return parsedValue;
-    } catch (e) {
-      console.log(e);
+    } catch {
       throw new BadRequestException('Validation failed');
     }
   }
