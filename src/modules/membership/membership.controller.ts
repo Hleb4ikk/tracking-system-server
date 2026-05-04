@@ -27,10 +27,10 @@ export class MembershipController {
   @Delete('/:user_id')
   @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
   async deleteMembership(
-    @CurrentUser() user: User,
+    @CurrentUser('company_id') companyId: string,
     @Param('user_id', ParseUUIDPipe) userId: string,
   ) {
-    await this.membershipService.deleteMembership(userId, user.company_id!);
+    await this.membershipService.deleteMembership(userId, companyId);
     return { message: 'User membership was stopped.' };
   }
 }

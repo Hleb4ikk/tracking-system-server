@@ -66,10 +66,14 @@ export class InvitationService {
     );
   }
 
-  async deleteInvitation(invitationId: string): Promise<void> {
+  async deleteInvitation(
+    companyId: string,
+    invitationId: string,
+  ): Promise<void> {
     const existingInvitation =
       await this.invitationRepository.findInvitationById(invitationId);
-    if (!existingInvitation) {
+
+    if (!existingInvitation || existingInvitation.company_id !== companyId) {
       throw new NotFoundException('Nothing to delete');
     }
     await this.invitationRepository.deleteInvitation(invitationId);
