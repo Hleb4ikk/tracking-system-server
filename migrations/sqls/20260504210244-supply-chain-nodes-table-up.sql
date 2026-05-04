@@ -6,5 +6,8 @@ CREATE TABLE supply_nodes(
     zip VARCHAR NOT NULL,
     region VARCHAR NOT NULL,
     city VARCHAR NOT NULL,
-    address_line VARCHAR NOT NULL
+    address_line VARCHAR NOT NULL,
+    company_id UUID NOT NULL,
+
+    CONSTRAINT fk_company FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );

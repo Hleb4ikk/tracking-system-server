@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Query,
   UseGuards,
@@ -67,7 +68,7 @@ export class SupplyChainController {
   @Delete(':id')
   @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
   async deleteSupplyChain(
-    @Param('id') supplyChainId: string,
+    @Param('id', ParseUUIDPipe) supplyChainId: string,
     @CurrentUser('company_id') companyId: string,
   ) {
     await this.supplyChainService.deleteSupplyChain(companyId, supplyChainId);

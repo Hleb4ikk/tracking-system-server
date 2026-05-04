@@ -7,6 +7,7 @@ import { InvitationModule } from './modules/invitation/invitation.module';
 import { MembershipModule } from './modules/membership/membership.module';
 import { VehicleModule } from './modules/vehicle/vehicle.module';
 import { SupplyChainModule } from './modules/supply-chain/supply-chain.module';
+import { SupplyNodeModule } from './modules/supply-node/supply-node.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SupplyChainModule } from './modules/supply-chain/supply-chain.module';
     MembershipModule,
     VehicleModule,
     SupplyChainModule,
+    SupplyNodeModule,
   ],
   controllers: [AppController],
   providers: [],
