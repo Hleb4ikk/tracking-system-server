@@ -5,19 +5,22 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { CompanyRolesGuard } from 'src/guards/roles.guard';
-import { SupplyChainService } from './supply-chain.service';
+import { SupplyChainService } from './supply-chain.service.js';
 import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
 import {
   type CreateSupplyChainDto,
   createSupplyChainSchema,
   type SupplyChainQuery,
   supplyChainQuerySchema,
+  type UpdateSupplyChainDto,
+  updateSupplyChainSchema,
 } from 'src/schemas/supplyChainSchemas';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { CompanyRoles } from 'src/decorators/company-roles.decorator';
@@ -32,22 +35,35 @@ export class SupplyChainController {
   @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
   async findSupplyChains(
     @Query(new ZodValidationPipe(supplyChainQuerySchema))
-    vehicleQuery: SupplyChainQuery,
+    supplyChainQuery: SupplyChainQuery,
 
     @CurrentUser('company_id')
     companyId: string,
   ) {
-    const { page, ...vehicleFilters } = vehicleQuery;
+    const { page, ...supplyChainFilters } = supplyChainQuery;
 
     const supplyChains = await this.supplyChainService.findSupplyChains(
       page,
       20,
       {
-        ...vehicleFilters,
+        ...supplyChainFilters,
         companyId,
       },
     );
     return supplyChains;
+  }
+
+  @Get(':id')
+  @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
+  async findSupplyChainById(
+    @Param('id', ParseUUIDPipe) supplyChainId: string,
+    @CurrentUser('company_id') companyId: string,
+  ) {
+    const supplyChain = await this.supplyChainService.findSupplyChainById(
+      companyId,
+      supplyChainId,
+    );
+    return supplyChain;
   }
 
   @Post()
@@ -63,6 +79,22 @@ export class SupplyChainController {
       supplyChainSchemaDto,
     );
     return { message: 'Supply chain successfully created!', supplyChain };
+  }
+
+  @Patch(':id')
+  @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
+  async updateSupplyChain(
+    @Param('id', ParseUUIDPipe) supplyChainId: string,
+    @CurrentUser('company_id') companyId: string,
+    @Body(new ZodValidationPipe(updateSupplyChainSchema))
+    updateSupplyChainDto: UpdateSupplyChainDto,
+  ) {
+    const updatedFields = await this.supplyChainService.updateSupplyChain(
+      companyId,
+      supplyChainId,
+      updateSupplyChainDto,
+    );
+    return { message: 'Supply chain was updated successfully!', updatedFields };
   }
 
   @Delete(':id')

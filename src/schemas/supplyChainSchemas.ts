@@ -3,7 +3,18 @@ import z from 'zod';
 export const createSupplyChainSchema = z.object({
   title: z.string(),
   description: z.string().optional().nullable(),
+  supply_node_connections: z
+    .array(
+      z.object({
+        startNodeId: z.uuid(),
+        destinationNodeId: z.uuid(),
+        distance: z.number().positive(),
+      }),
+    )
+    .optional(),
 });
+
+export const updateSupplyChainSchema = createSupplyChainSchema.partial();
 
 export const supplyChainFiltersSchema = z
   .object({
@@ -17,5 +28,7 @@ export const supplyChainQuerySchema = supplyChainFiltersSchema.extend({
 });
 
 export type CreateSupplyChainDto = z.infer<typeof createSupplyChainSchema>;
+export type UpdateSupplyChainDto = z.infer<typeof updateSupplyChainSchema>;
+
 export type SupplyChainFilters = z.infer<typeof supplyChainFiltersSchema>;
 export type SupplyChainQuery = z.infer<typeof supplyChainQuerySchema>;

@@ -4,8 +4,9 @@ import { CompanyRepository } from '../company/company.repository';
 import {
   CreateSupplyChainDto,
   SupplyChainFilters,
+  UpdateSupplyChainDto,
 } from 'src/schemas/supplyChainSchemas';
-import { SupplyChain } from 'src/types/SupplyChain';
+import { SupplyChain, SupplyChainWithGraph } from 'src/types/SupplyChain';
 
 @Injectable()
 export class SupplyChainService {
@@ -34,10 +35,26 @@ export class SupplyChainService {
     );
   }
 
+  async findSupplyChainById(
+    companyId: string,
+    supplyChainId: string,
+  ): Promise<Partial<SupplyChainWithGraph>> {
+    const supplyChain =
+      await this.supplyChainRepository.findSupplyChainWithConnectionsById(
+        supplyChainId,
+      );
+
+    if (!supplyChain || supplyChain.company_id !== companyId) {
+      throw new NotFoundException("Supply chain wasn't found.");
+    }
+
+    return supplyChain;
+  }
+
   async createSupplyChain(
     companyId: string,
     createSupplyChainDto: CreateSupplyChainDto,
-  ): Promise<SupplyChain> {
+  ): Promise<SupplyChainWithGraph> {
     const company = await this.companyRepository.findCompanyById(companyId);
 
     if (!company) {
@@ -45,10 +62,28 @@ export class SupplyChainService {
         "User company wasn't found to create vehicle.",
       );
     }
-
-    return await this.supplyChainRepository.createSupplyChain(
+    const result = await this.supplyChainRepository.createSupplyChain(
       companyId,
       createSupplyChainDto,
+    );
+    return result;
+  }
+
+  async updateSupplyChain(
+    companyId: string,
+    supplyChainId: string,
+    updateSupplyChainDto: UpdateSupplyChainDto,
+  ): Promise<Partial<SupplyChainWithGraph>> {
+    const supplyChain =
+      await this.supplyChainRepository.findSupplyChainById(supplyChainId);
+
+    if (!supplyChain || supplyChain.company_id !== companyId) {
+      throw new NotFoundException("Supply chain wasn't found.");
+    }
+
+    return await this.supplyChainRepository.updateSupplyChain(
+      supplyChainId,
+      updateSupplyChainDto,
     );
   }
 

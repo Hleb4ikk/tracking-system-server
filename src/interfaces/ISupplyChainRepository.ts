@@ -1,8 +1,9 @@
 import {
   CreateSupplyChainDto,
   SupplyChainFilters,
+  UpdateSupplyChainDto,
 } from 'src/schemas/supplyChainSchemas';
-import { SupplyChain } from 'src/types/SupplyChain';
+import { SupplyChain, SupplyChainWithGraph } from 'src/types/SupplyChain';
 
 export interface ISupplyChainRepository {
   findSupplyChains(
@@ -16,7 +17,12 @@ export interface ISupplyChainRepository {
   createSupplyChain(
     companyId: string,
     createSupplyChainDto: CreateSupplyChainDto,
-  ): Promise<SupplyChain>;
+  ): Promise<SupplyChainWithGraph>;
+
+  updateSupplyChain(
+    supplyChainId: string,
+    updateSupplyChainDto: UpdateSupplyChainDto,
+  ): Promise<Partial<SupplyChainWithGraph>>;
 
   deleteSupplyChain(supplyChainId: string): Promise<void>;
 }
