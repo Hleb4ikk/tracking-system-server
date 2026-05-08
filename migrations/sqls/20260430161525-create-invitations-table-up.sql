@@ -1,4 +1,4 @@
-CREATE TABLE invitations(
+CREATE TABLE IF NOT EXISTS invitations(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     company_id UUID NOT NULL,
     reciever_email VARCHAR NOT NULL,
