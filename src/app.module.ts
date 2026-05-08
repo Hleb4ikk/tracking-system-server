@@ -8,6 +8,7 @@ import { MembershipModule } from './modules/membership/membership.module';
 import { VehicleModule } from './modules/vehicle/vehicle.module';
 import { SupplyChainModule } from './modules/supply-chain/supply-chain.module';
 import { SupplyNodeModule } from './modules/supply-node/supply-node.module';
+import { RecieverModule } from './modules/reciever/reciever.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { SupplyNodeModule } from './modules/supply-node/supply-node.module';
     VehicleModule,
     SupplyChainModule,
     SupplyNodeModule,
+    RecieverModule,
   ],
   controllers: [AppController],
   providers: [],

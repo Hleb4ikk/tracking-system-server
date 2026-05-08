@@ -4,4 +4,5 @@ export interface Reciever {
   surname: string;
   email: string;
   phone: string;
+  company_id: string;
 }
