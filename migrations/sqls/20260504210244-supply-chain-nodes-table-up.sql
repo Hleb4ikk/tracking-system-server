@@ -1,4 +1,4 @@
-CREATE TABLE supply_nodes(
+CREATE TABLE IF NOT EXISTS supply_nodes(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR NOT NULL,
     description VARCHAR,

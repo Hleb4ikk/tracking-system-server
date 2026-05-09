@@ -1,4 +1,4 @@
-CREATE TABLE supply_node_connections(
+CREATE TABLE IF NOT EXISTS supply_node_connections(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     start_node_id UUID NOT NULL,
     destination_node_id UUID NOT NULL,

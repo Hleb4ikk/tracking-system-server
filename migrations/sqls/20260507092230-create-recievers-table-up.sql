@@ -1,4 +1,4 @@
-CREATE TABLE recievers(
+CREATE TABLE IF NOT EXISTS recievers(
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR NOT NULL,
     surname VARCHAR NOT NULL,
