@@ -1,0 +1,7 @@
+ALTER TABLE vehicles ADD COLUMN cargo_id UUID UNIQUE;
+
+ALTER TABLE vehicles
+ADD CONSTRAINT fk_vehicles_cargo
+FOREIGN KEY (cargo_id)
+REFERENCES cargos(id)
+ON DELETE SET NULL;

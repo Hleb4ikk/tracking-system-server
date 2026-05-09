@@ -3,7 +3,7 @@ import {
   OrderFilters,
   UpdateOrderDto,
 } from 'src/schemas/orderSchemas';
-import { Order, OrderWithHistory } from 'src/types/Order';
+import { Order, OrderWithHistory, OrderWithDetails } from 'src/types/Order';
 
 export interface IOrderRepository {
   findOrders(
@@ -13,6 +13,8 @@ export interface IOrderRepository {
   ): Promise<OrderWithHistory[]>;
 
   findOrderById(orderId: string): Promise<Order>;
+
+  findOrderWithDetailsById(orderId: string): Promise<OrderWithDetails>;
 
   createOrder(
     companyId: string,

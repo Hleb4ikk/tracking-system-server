@@ -36,23 +36,26 @@ export class InvitationRepository implements IInvitationRepository {
   }
 
   async acceptInvitation(invitationId: string, userId: string) {
+    const client = await this.postgresService.getClient();
     try {
-      await this.postgresService.query('BEGIN;');
+      await client.query('BEGIN;');
 
-      const result = await this.postgresService.query<Invitation>(
+      const result = await client.query<Invitation>(
         'DELETE FROM invitations WHERE id = $1 RETURNING *;',
         [invitationId],
       );
       const invitation = result.rows[0];
 
-      await this.postgresService.query(
+      await client.query(
         `INSERT INTO positions(company_id, user_id, role) VALUES($1, $2, $3);`,
         [invitation.company_id, userId, invitation.role],
       );
-      await this.postgresService.query('COMMIT;');
+      await client.query('COMMIT;');
     } catch (error) {
-      await this.postgresService.query('ROLLBACK;');
+      await client.query('ROLLBACK;');
       throw error;
+    } finally {
+      client.release();
     }
   }
 

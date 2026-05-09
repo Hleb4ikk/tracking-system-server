@@ -5,4 +5,5 @@ export interface Vehicle {
   title: string;
   delivery_type: DeliveryType;
   company_id: string;
+  cargo_id: string | null;
 }

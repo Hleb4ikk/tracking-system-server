@@ -1,6 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { VehicleRepository } from './vehicle.repository';
-import { CreateVehicleDto, VehicleFilters } from 'src/schemas/vehicleSchemas';
+import {
+  CreateVehicleDto,
+  UpdateVehicleDto,
+  VehicleFilters,
+} from 'src/schemas/vehicleSchemas';
 import { CompanyRepository } from '../company/company.repository';
 import { Vehicle } from 'src/types/Vehicle';
 
@@ -44,6 +48,24 @@ export class VehicleService {
       createVehicleDto,
     );
   }
+
+  async updateVehicle(
+    companyId: string,
+    vehicleId: string,
+    updateVehicleDto: UpdateVehicleDto,
+  ): Promise<Partial<Vehicle>> {
+    const vehicle = await this.vehicleRepository.findVehicleById(vehicleId);
+
+    if (!vehicle || vehicle.company_id !== companyId) {
+      throw new NotFoundException("Vehicle wasn't found.");
+    }
+
+    return await this.vehicleRepository.updateVehicle(
+      vehicleId,
+      updateVehicleDto,
+    );
+  }
+
   async deleteVehicle(companyId: string, vehicleId: string): Promise<void> {
     const vehicle = await this.vehicleRepository.findVehicleById(vehicleId);
 

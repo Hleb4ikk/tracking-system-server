@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PostgresService } from '../database/postgres.service';
 import { IVehicleRepository } from 'src/interfaces/IVehicleRepository';
-import { CreateVehicleDto, VehicleFilters } from 'src/schemas/vehicleSchemas';
+import {
+  CreateVehicleDto,
+  UpdateVehicleDto,
+  VehicleFilters,
+} from 'src/schemas/vehicleSchemas';
 import { Vehicle } from 'src/types/Vehicle';
 
 @Injectable()
@@ -55,6 +59,29 @@ export class VehicleRepository implements IVehicleRepository {
       [createVehicleDto.title, createVehicleDto.deliveryType, companyId],
     );
     return result.rows[0];
+  }
+
+  async updateVehicle(
+    vehicleId: string,
+    updateVehicleDto: UpdateVehicleDto,
+  ): Promise<Partial<Vehicle>> {
+    await this.postgresService.query<Vehicle>(
+      `UPDATE vehicles SET 
+            title = COALESCE($1, title), 
+            delivery_type = COALESCE($2, delivery_type),
+            cargo_id = $3
+            WHERE id = $4;
+            `,
+      [
+        updateVehicleDto.title ?? null,
+        updateVehicleDto.deliveryType ?? null,
+        updateVehicleDto.cargoId === undefined
+          ? null
+          : updateVehicleDto.cargoId,
+        vehicleId,
+      ],
+    );
+    return updateVehicleDto;
   }
 
   async deleteVehicle(vehicleId: string): Promise<void> {

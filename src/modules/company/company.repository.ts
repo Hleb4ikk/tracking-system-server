@@ -31,28 +31,32 @@ export class CompanyRepository implements ICompanyRepository {
     ownerId: string,
     createCompanyDto: CreateCompanyDto,
   ): Promise<Company> {
-    try {
-      await this.postgresService.query('BEGIN;');
+    const client = await this.postgresService.getClient();
 
-      const result = await this.postgresService.query<Company>(
+    try {
+      await client.query('BEGIN;');
+
+      const result = await client.query<Company>(
         `INSERT INTO companies (title, description, owner_id) VALUES ($1, $2, $3) RETURNING *;`,
         [createCompanyDto.title, createCompanyDto.description ?? null, ownerId],
       );
 
       const companyId = result.rows[0].id;
 
-      await this.postgresService.query(
+      await client.query(
         'INSERT INTO positions(company_id, user_id, role) VALUES ($1, $2, $3);',
         [companyId, ownerId, ROLES.CO_FOUNDER],
       );
 
-      await this.postgresService.query('COMMIT;');
+      await client.query('COMMIT;');
 
       return result.rows[0];
     } catch (error) {
-      await this.postgresService.query('ROLLBACK;');
+      await client.query('ROLLBACK;');
 
       throw error;
+    } finally {
+      client.release();
     }
   }
   async updateCompanyById(

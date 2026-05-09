@@ -6,6 +6,12 @@ export const createVehicleSchema = z.object({
   deliveryType: z.enum(DeliveryType),
 });
 
+export const updateVehicleSchema = z.object({
+  title: z.string().min(1).optional(),
+  deliveryType: z.enum(DeliveryType).optional(),
+  cargoId: z.uuid().nullable().optional(),
+});
+
 export const vehicleFiltersSchema = z
   .object({
     title: z.string().min(1),
@@ -21,3 +27,4 @@ export const vehicleQuerySchema = vehicleFiltersSchema.extend({
 export type VehicleQuery = z.infer<typeof vehicleQuerySchema>;
 export type VehicleFilters = z.infer<typeof vehicleFiltersSchema>;
 export type CreateVehicleDto = z.infer<typeof createVehicleSchema>;
+export type UpdateVehicleDto = z.infer<typeof updateVehicleSchema>;

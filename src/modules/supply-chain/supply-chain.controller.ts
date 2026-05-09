@@ -25,6 +25,7 @@ import {
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { CompanyRoles } from 'src/decorators/company-roles.decorator';
 import { ROLES } from 'src/enums/roles';
+import flatted from 'src/lib/flatted';
 
 @Controller('/supply-chains')
 @UseGuards(AuthGuard, CompanyRolesGuard)
@@ -63,7 +64,7 @@ export class SupplyChainController {
       companyId,
       supplyChainId,
     );
-    return supplyChain;
+    return (await flatted).toJSON(supplyChain) as unknown;
   }
 
   @Post()
@@ -78,7 +79,10 @@ export class SupplyChainController {
       companyId,
       supplyChainSchemaDto,
     );
-    return { message: 'Supply chain successfully created!', supplyChain };
+    return {
+      message: 'Supply chain successfully created!',
+      supplyChain: (await flatted).toJSON(supplyChain) as unknown,
+    };
   }
 
   @Patch(':id')
@@ -94,7 +98,10 @@ export class SupplyChainController {
       supplyChainId,
       updateSupplyChainDto,
     );
-    return { message: 'Supply chain was updated successfully!', updatedFields };
+    return {
+      message: 'Supply chain was updated successfully!',
+      updatedFields: (await flatted).toJSON(updatedFields) as unknown,
+    };
   }
 
   @Delete(':id')

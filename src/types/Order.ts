@@ -1,3 +1,5 @@
+import { Cargo } from './Cargo';
+
 export interface Order {
   id: string;
   title: string;
@@ -18,4 +20,9 @@ export interface StatusHistory {
 
 export interface OrderWithHistory extends Order {
   status_history: StatusHistory[];
+}
+
+export interface OrderWithDetails extends Order {
+  status_history: StatusHistory[];
+  cargos: Cargo[];
 }

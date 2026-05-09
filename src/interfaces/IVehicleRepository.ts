@@ -1,4 +1,8 @@
-import { CreateVehicleDto, VehicleFilters } from 'src/schemas/vehicleSchemas';
+import {
+  CreateVehicleDto,
+  UpdateVehicleDto,
+  VehicleFilters,
+} from 'src/schemas/vehicleSchemas';
 import { Vehicle } from 'src/types/Vehicle';
 
 export interface IVehicleRepository {
@@ -12,5 +16,9 @@ export interface IVehicleRepository {
     companyId: string,
     createVehicleDto: CreateVehicleDto,
   ): Promise<Vehicle>;
+  updateVehicle(
+    vehicleId: string,
+    updateVehicleDto: UpdateVehicleDto,
+  ): Promise<Partial<Vehicle>>;
   deleteVehicle(vehicleId: string): Promise<void>;
 }

@@ -1,8 +1,14 @@
 import { SupplyNode } from 'src/types/SupplyNode';
 import { SupplyNodeConnection } from 'src/types/SupplyNodeConnection';
 
+interface SupplyGraphEdge {
+  conn_id: string;
+  node: SupplyGraphNode;
+  distance: number;
+}
+
 interface SupplyGraphNode extends SupplyNode {
-  next: SupplyGraphNode[];
+  next: SupplyGraphEdge[];
 }
 
 export class SupplyGraph {
@@ -34,10 +40,13 @@ export class SupplyGraph {
     );
 
     childrenConnections.forEach((connection) => {
-      newNode.next.push(
-        this.createGraph(connections, connection.destination_node),
-      );
+      newNode.next.push({
+        conn_id: connection.id,
+        node: this.createGraph(connections, connection.destination_node),
+        distance: connection.distance,
+      });
     });
+
     return newNode;
   }
 }

@@ -1,11 +1,11 @@
 CREATE TABLE cargos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title VARCHAR NOT NULL,
-    description VARCHAR,
+    description VARCHAR NOT NULL,
     supply_node_connection_id UUID NOT NULL,
-    status VARCHAR NOT NULL,
-    vehicle_id UUID NOT NULL,
-    order_id UUID NOT NULL,
+    status VARCHAR NOT NULL DEFAULT 'assembly',
+    vehicle_id UUID,
+    order_id UUID,
     responsible_id UUID NOT NULL,
     company_id UUID NOT NULL,
 
