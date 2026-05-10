@@ -30,7 +30,7 @@ export class UserRepository implements IUserRepository {
   async findUserByEmail(email: string): Promise<UserWithPassword | null> {
     const result = await this.postgresService.query<UserWithPassword>(
       `
-         SELECT * FROM users WHERE users.email = $1;
+         SELECT users.*, positions.company_id, positions.role FROM users LEFT JOIN positions ON users.id = positions.user_id WHERE users.email = $1;
          `,
       [email],
     );

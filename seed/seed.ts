@@ -24,6 +24,10 @@ async function seed() {
 
     // Clean existing data (in reverse order of dependencies)
     console.log('🧹 Cleaning existing data...');
+    await client.query('DELETE FROM cargos');
+    await client.query('DELETE FROM status_history');
+    await client.query('DELETE FROM orders');
+    await client.query('DELETE FROM recievers');
     await client.query('DELETE FROM supply_node_connections');
     await client.query('DELETE FROM supply_chains');
     await client.query('DELETE FROM supply_nodes');
@@ -353,195 +357,301 @@ async function seed() {
     // Create supply node connections
     console.log('🛤️ Creating supply node connections...');
 
+    const connections: any[] = [];
+
     // US East Coast Route (0) - nodes 0, 2, 3, 6
-    await client.query(
+    const conn1 = await client.query(
       `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 450.5),
-        ($1, $3, $4, 1200.3),
-        ($1, $4, $5, 850.2),
-        ($1, $5, $2, 1100.0)`,
-      [
-        supplyChains[0].id,
-        supplyNodes[0].id,
-        supplyNodes[2].id,
-        supplyNodes[3].id,
-        supplyNodes[6].id,
-      ],
+        ($1, $2, $3, 450.5)
+      RETURNING id`,
+      [supplyChains[0].id, supplyNodes[0].id, supplyNodes[2].id],
     );
+    connections.push(...conn1.rows);
+
+    const conn2 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 1200.3)
+      RETURNING id`,
+      [supplyChains[0].id, supplyNodes[2].id, supplyNodes[3].id],
+    );
+    connections.push(...conn2.rows);
+
+    const conn3 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 850.2)
+      RETURNING id`,
+      [supplyChains[0].id, supplyNodes[3].id, supplyNodes[6].id],
+    );
+    connections.push(...conn3.rows);
+
+    const conn4 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 1100.0)
+      RETURNING id`,
+      [supplyChains[0].id, supplyNodes[6].id, supplyNodes[0].id],
+    );
+    connections.push(...conn4.rows);
 
     // US West Coast Route (1) - nodes 1, 4, 7
-    await client.query(
+    const conn5 = await client.query(
       `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 380.0),
-        ($1, $3, $4, 650.5),
-        ($1, $4, $2, 950.0)`,
-      [
-        supplyChains[1].id,
-        supplyNodes[1].id,
-        supplyNodes[4].id,
-        supplyNodes[7].id,
-      ],
+        ($1, $2, $3, 380.0)
+      RETURNING id`,
+      [supplyChains[1].id, supplyNodes[1].id, supplyNodes[4].id],
     );
+    connections.push(...conn5.rows);
+
+    const conn6 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 650.5)
+      RETURNING id`,
+      [supplyChains[1].id, supplyNodes[4].id, supplyNodes[7].id],
+    );
+    connections.push(...conn6.rows);
+
+    const conn7 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 950.0)
+      RETURNING id`,
+      [supplyChains[1].id, supplyNodes[7].id, supplyNodes[1].id],
+    );
+    connections.push(...conn7.rows);
 
     // Trans-Atlantic Route (2) - nodes 5, 8, 9, 10
-    await client.query(
+    const conn8 = await client.query(
       `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 5500.0),
-        ($1, $3, $4, 930.0),
-        ($1, $4, $5, 340.0)`,
+        ($1, $2, $3, 5500.0)
+      RETURNING id`,
+      [supplyChains[2].id, supplyNodes[5].id, supplyNodes[8].id],
+    );
+    connections.push(...conn8.rows);
+
+    const conn9 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 930.0)
+      RETURNING id`,
+      [supplyChains[2].id, supplyNodes[8].id, supplyNodes[9].id],
+    );
+    connections.push(...conn9.rows);
+
+    const conn10 = await client.query(
+      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
+        ($1, $2, $3, 340.0)
+      RETURNING id`,
+      [supplyChains[2].id, supplyNodes[9].id, supplyNodes[10].id],
+    );
+    connections.push(...conn10.rows);
+
+    console.log(`✅ Created ${connections.length} supply node connections`);
+
+    console.log(`✅ Created ${connections.length} supply node connections`);
+
+    // Create receivers
+    console.log('📦 Creating receivers...');
+    const receiversResult = await client.query(
+      `INSERT INTO recievers (name, surname, email, phone, company_id) VALUES 
+        -- US Receivers
+        ('Michael', 'Johnson', 'michael.johnson@example.com', '+1-555-0101', $1),
+        ('Emily', 'Williams', 'emily.williams@example.com', '+1-555-0102', $1),
+        ('Robert', 'Brown', 'robert.brown@example.com', '+1-555-0103', $1),
+        ('Jennifer', 'Davis', 'jennifer.davis@example.com', '+1-555-0104', $1),
+        ('William', 'Miller', 'william.miller@example.com', '+1-555-0105', $1),
+        ('Jessica', 'Wilson', 'jessica.wilson@example.com', '+1-555-0106', $1),
+        ('David', 'Moore', 'david.moore@example.com', '+1-555-0107', $1),
+        ('Sarah', 'Taylor', 'sarah.taylor@example.com', '+1-555-0108', $1),
+        
+        -- European Receivers
+        ('Hans', 'Schmidt', 'hans.schmidt@example.com', '+49-30-12345678', $1),
+        ('Sophie', 'Dubois', 'sophie.dubois@example.com', '+33-1-23456789', $1),
+        ('James', 'Smith', 'james.smith@example.com', '+44-20-12345678', $1),
+        ('Isabella', 'Rossi', 'isabella.rossi@example.com', '+39-02-12345678', $1),
+        ('Carlos', 'Rodriguez', 'carlos.rodriguez@example.com', '+34-91-1234567', $1),
+        ('Anna', 'van der Berg', 'anna.vandenberg@example.com', '+31-20-1234567', $1),
+        
+        -- Asian Receivers
+        ('Yuki', 'Tanaka', 'yuki.tanaka@example.com', '+81-3-12345678', $1),
+        ('Wei', 'Chen', 'wei.chen@example.com', '+86-10-12345678', $1),
+        ('Li', 'Wang', 'li.wang@example.com', '+86-21-12345678', $1),
+        ('Raj', 'Patel', 'raj.patel@example.com', '+91-22-12345678', $1),
+        ('Mohammed', 'Al-Rashid', 'mohammed.alrashid@example.com', '+971-4-1234567', $1),
+        ('Mei', 'Lim', 'mei.lim@example.com', '+65-6123-4567', $1),
+        
+        -- Other Global Receivers
+        ('Jack', 'Thompson', 'jack.thompson@example.com', '+61-2-1234-5678', $1),
+        ('Olivia', 'Brown', 'olivia.brown@example.com', '+61-3-1234-5678', $1),
+        ('Carlos', 'Silva', 'carlos.silva@example.com', '+55-11-1234-5678', $1),
+        ('Maria', 'Lopez', 'maria.lopez@example.com', '+52-55-1234-5678', $1),
+        ('John', 'MacDonald', 'john.macdonald@example.com', '+1-416-123-4567', $1),
+        ('Emma', 'Chen', 'emma.chen@example.com', '+1-604-123-4567', $1),
+        ('Thabo', 'Nkosi', 'thabo.nkosi@example.com', '+27-11-123-4567', $1),
+        ('Fatima', 'Hassan', 'fatima.hassan@example.com', '+20-2-1234-5678', $1),
+        ('Ahmed', 'Khan', 'ahmed.khan@example.com', '+92-21-1234-5678', $1),
+        ('Nguyen', 'Tran', 'nguyen.tran@example.com', '+84-28-1234-5678', $1)
+      RETURNING id, name, surname;`,
+      [companies[0].id],
+    );
+
+    const receivers = receiversResult.rows;
+    console.log(`✅ Created ${receivers.length} receivers`);
+
+    // Create orders
+    console.log('📋 Creating orders...');
+    const ordersResult = await client.query(
+      `INSERT INTO orders (title, status, description, responsible_id, reciever_id, company_id) VALUES 
+        ('Electronics Shipment to NYC', 'in progress', 'Urgent delivery of electronic components from warehouse', $1, $2, $3),
+        ('Furniture Delivery LA', 'pending', 'Office furniture delivery to new branch', $4, $5, $3),
+        ('Medical Supplies Chicago', 'completed', 'Emergency medical supplies delivery', $6, $7, $3),
+        ('Automotive Parts Houston', 'in progress', 'Car parts for repair shop', $8, $9, $3),
+        ('Fashion Items Miami', 'pending', 'Spring collection delivery to retail store', $1, $10, $3),
+        ('Tech Equipment Boston', 'in progress', 'Server equipment for data center', $4, $11, $3),
+        ('Food Products Seattle', 'completed', 'Organic food products for supermarket chain', $6, $12, $3),
+        ('Construction Materials SF', 'pending', 'Building materials for construction site', $8, $13, $3),
+        ('Pharmaceutical Delivery Berlin', 'in progress', 'Temperature-controlled pharmaceutical products', $1, $14, $3),
+        ('Luxury Goods Paris', 'completed', 'High-end fashion and accessories', $4, $15, $3),
+        ('Books and Media London', 'pending', 'Educational materials for university', $6, $16, $3),
+        ('Wine Shipment Milan', 'in progress', 'Premium wine collection for restaurant', $8, $17, $3),
+        ('Art Supplies Madrid', 'pending', 'Professional art materials for gallery', $1, $18, $3),
+        ('Electronics Amsterdam', 'completed', 'Consumer electronics for retail chain', $4, $19, $3),
+        ('Machinery Tokyo', 'in progress', 'Industrial machinery parts', $6, $20, $3),
+        ('Textiles Beijing', 'pending', 'Fabric and textile materials', $8, $21, $3),
+        ('Consumer Goods Shanghai', 'in progress', 'Various consumer products for retail', $1, $22, $3),
+        ('Spices Mumbai', 'completed', 'Exotic spices and ingredients', $4, $23, $3),
+        ('Perfumes Dubai', 'pending', 'Luxury perfume collection', $6, $24, $3),
+        ('Electronics Singapore', 'in progress', 'Latest tech gadgets and accessories', $8, $25, $3),
+        ('Mining Equipment Sydney', 'pending', 'Heavy mining equipment parts', $1, $26, $3),
+        ('Wine Melbourne', 'completed', 'Australian wine export', $4, $27, $3),
+        ('Coffee Beans Sao Paulo', 'in progress', 'Premium coffee beans shipment', $6, $28, $3),
+        ('Tequila Mexico City', 'pending', 'Premium tequila collection', $8, $29, $3),
+        ('Maple Syrup Toronto', 'completed', 'Canadian maple syrup export', $1, $30, $3),
+        ('Salmon Vancouver', 'in progress', 'Fresh salmon seafood delivery', $4, $31, $3),
+        ('Diamonds Johannesburg', 'pending', 'Precious stones shipment', $6, $32, $3),
+        ('Cotton Cairo', 'in progress', 'Egyptian cotton textiles', $8, $33, $3),
+        ('Carpets Karachi', 'completed', 'Handmade carpet collection', $1, $34, $3),
+        ('Rice Ho Chi Minh', 'pending', 'Premium rice export', $4, $35, $3)
+      RETURNING id, title, status;`,
       [
-        supplyChains[2].id,
-        supplyNodes[5].id,
-        supplyNodes[8].id,
-        supplyNodes[9].id,
-        supplyNodes[10].id,
+        users[0].id,
+        receivers[0].id,
+        companies[0].id,
+        users[7].id,
+        receivers[1].id,
+        users[7].id,
+        receivers[2].id,
+        users[9].id,
+        receivers[3].id,
+        receivers[4].id,
+        receivers[5].id,
+        receivers[6].id,
+        receivers[7].id,
+        receivers[8].id,
+        receivers[9].id,
+        receivers[10].id,
+        receivers[11].id,
+        receivers[12].id,
+        receivers[13].id,
+        receivers[14].id,
+        receivers[15].id,
+        receivers[16].id,
+        receivers[17].id,
+        receivers[18].id,
+        receivers[19].id,
+        receivers[20].id,
+        receivers[21].id,
+        receivers[22].id,
+        receivers[23].id,
+        receivers[24].id,
+        receivers[25].id,
+        receivers[26].id,
+        receivers[27].id,
+        receivers[28].id,
+        receivers[29].id,
       ],
     );
 
-    // Trans-Pacific Route (3) - nodes 4, 15, 17, 18
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 8800.0),
-        ($1, $3, $4, 1300.0),
-        ($1, $4, $5, 1200.0),
-        ($1, $5, $2, 10000.0)`,
+    const orders = ordersResult.rows;
+    console.log(`✅ Created ${orders.length} orders`);
+
+    // Create cargos
+    console.log('📦 Creating cargos...');
+    const cargosResult = await client.query(
+      `INSERT INTO cargos (title, status, description, order_id, vehicle_id, supply_node_connection_id, responsible_id, company_id) VALUES 
+        ('Electronics Package 1', 'on the way', 'Laptops and tablets', $1, $2, $3, $4, $5),
+        ('Electronics Package 2', 'assembly', 'Smartphones and accessories', $6, $7, $8, $9, $10),
+        ('Office Desk Set', 'assembly', 'Executive office furniture', $11, $12, $13, $14, $15),
+        ('Office Chairs', 'assembly', 'Ergonomic office chairs', $16, $17, $18, $19, $20),
+        ('Medical Kit A', 'delivered', 'Emergency medical supplies', $21, $22, $23, $24, $25),
+        ('Medical Kit B', 'delivered', 'Surgical instruments', $26, $27, $28, $29, $30),
+        ('Engine Parts', 'on the way', 'Car engine components', $31, $32, $33, $34, $35),
+        ('Brake Systems', 'assembly', 'Brake pads and discs', $36, $37, $38, $39, $40),
+        ('Spring Dresses', 'assembly', 'Women fashion collection', $41, $42, $43, $44, $45),
+        ('Spring Accessories', 'assembly', 'Bags and shoes', $46, $47, $48, $49, $50)
+      RETURNING id, title, status;`,
       [
-        supplyChains[3].id,
-        supplyNodes[4].id,
-        supplyNodes[15].id,
-        supplyNodes[17].id,
-        supplyNodes[18].id,
+        // Cargo 1
+        orders[0].id,
+        vehicles[0].id,
+        connections[0].id,
+        users[0].id,
+        companies[0].id,
+        // Cargo 2
+        orders[0].id,
+        vehicles[1].id,
+        connections[1].id,
+        users[0].id,
+        companies[0].id,
+        // Cargo 3
+        orders[1].id,
+        vehicles[2].id,
+        connections[2].id,
+        users[7].id,
+        companies[0].id,
+        // Cargo 4
+        orders[1].id,
+        vehicles[3].id,
+        connections[3].id,
+        users[7].id,
+        companies[0].id,
+        // Cargo 5
+        orders[2].id,
+        vehicles[4].id,
+        connections[4].id,
+        users[7].id,
+        companies[0].id,
+        // Cargo 6
+        orders[2].id,
+        vehicles[5].id,
+        connections[5].id,
+        users[7].id,
+        companies[0].id,
+        // Cargo 7
+        orders[3].id,
+        vehicles[6].id,
+        connections[6].id,
+        users[9].id,
+        companies[0].id,
+        // Cargo 8
+        orders[3].id,
+        vehicles[7].id,
+        connections[7].id,
+        users[9].id,
+        companies[0].id,
+        // Cargo 9
+        orders[4].id,
+        vehicles[8].id,
+        connections[8].id,
+        users[0].id,
+        companies[0].id,
+        // Cargo 10
+        orders[4].id,
+        vehicles[9].id,
+        connections[9].id,
+        users[0].id,
+        companies[0].id,
       ],
     );
 
-    // European Distribution (4) - nodes 8, 9, 10, 11, 12, 13, 14
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 930.0),
-        ($1, $3, $4, 450.0),
-        ($1, $4, $5, 850.0),
-        ($1, $5, $6, 1500.0),
-        ($1, $6, $7, 180.0),
-        ($1, $7, $8, 25.0)`,
-      [
-        supplyChains[4].id,
-        supplyNodes[8].id,
-        supplyNodes[9].id,
-        supplyNodes[10].id,
-        supplyNodes[11].id,
-        supplyNodes[12].id,
-        supplyNodes[13].id,
-        supplyNodes[14].id,
-      ],
-    );
-
-    // Asian Supply Chain (5) - nodes 15, 16, 17, 19, 20, 21
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 2100.0),
-        ($1, $3, $4, 1200.0),
-        ($1, $4, $5, 1500.0),
-        ($1, $5, $6, 2600.0),
-        ($1, $6, $7, 3500.0),
-        ($1, $7, $2, 5200.0)`,
-      [
-        supplyChains[5].id,
-        supplyNodes[15].id,
-        supplyNodes[16].id,
-        supplyNodes[17].id,
-        supplyNodes[19].id,
-        supplyNodes[20].id,
-        supplyNodes[21].id,
-      ],
-    );
-
-    // Global Express Route (6) - nodes 0, 5, 8, 22, 23
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 320.0),
-        ($1, $3, $4, 11000.0),
-        ($1, $4, $5, 6500.0),
-        ($1, $5, $6, 12000.0),
-        ($1, $6, $2, 16000.0)`,
-      [
-        supplyChains[6].id,
-        supplyNodes[0].id,
-        supplyNodes[5].id,
-        supplyNodes[8].id,
-        supplyNodes[22].id,
-        supplyNodes[23].id,
-      ],
-    );
-
-    // South America Route (7) - nodes 6, 25
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 6600.0),
-        ($1, $3, $2, 6600.0)`,
-      [supplyChains[7].id, supplyNodes[6].id, supplyNodes[25].id],
-    );
-
-    // Middle East Route (8) - nodes 22, 17, 20
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 6000.0),
-        ($1, $3, $4, 3500.0),
-        ($1, $4, $2, 5200.0)`,
-      [
-        supplyChains[8].id,
-        supplyNodes[22].id,
-        supplyNodes[17].id,
-        supplyNodes[20].id,
-      ],
-    );
-
-    // Australia Route (9) - nodes 23, 24, 21
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 700.0),
-        ($1, $3, $4, 4500.0),
-        ($1, $4, $2, 6300.0)`,
-      [
-        supplyChains[9].id,
-        supplyNodes[23].id,
-        supplyNodes[24].id,
-        supplyNodes[21].id,
-      ],
-    );
-
-    // China Manufacturing Route (10) - nodes 16, 17, 18, 19
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 1200.0),
-        ($1, $3, $4, 1500.0),
-        ($1, $4, $5, 1800.0),
-        ($1, $5, $2, 2000.0)`,
-      [
-        supplyChains[10].id,
-        supplyNodes[16].id,
-        supplyNodes[17].id,
-        supplyNodes[18].id,
-        supplyNodes[19].id,
-      ],
-    );
-
-    // Intra-Asia Route (11) - nodes 15, 17, 20, 21
-    await client.query(
-      `INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance) VALUES 
-        ($1, $2, $3, 2900.0),
-        ($1, $3, $4, 5200.0),
-        ($1, $4, $5, 3300.0),
-        ($1, $5, $2, 5300.0)`,
-      [
-        supplyChains[11].id,
-        supplyNodes[15].id,
-        supplyNodes[17].id,
-        supplyNodes[20].id,
-        supplyNodes[21].id,
-      ],
-    );
-
-    console.log('✅ Created supply node connections');
+    const cargos = cargosResult.rows;
+    console.log(`✅ Created ${cargos.length} cargos`);
 
     await client.query('COMMIT');
     console.log('🎉 Seed completed successfully!');
@@ -551,11 +661,20 @@ async function seed() {
     console.log(`   Vehicles: ${vehicles.length}`);
     console.log(`   Supply Nodes: ${supplyNodes.length}`);
     console.log(`   Supply Chains: ${supplyChains.length}`);
+    console.log(`   Receivers: ${receivers.length}`);
+    console.log(`   Orders: ${orders.length}`);
+    console.log(`   Cargos: ${cargos.length}`);
     console.log('\n🔑 Test user credentials:');
     console.log('   Email: john.doe@example.com');
     console.log('   Password: password123');
-    console.log('   Admin Email: admin@example.com');
-    console.log('   Admin Password: password123');
+    console.log('   Role: co-founder');
+    console.log('   Company: Global Logistics Inc.');
+    console.log('\n   Email: logistician1@example.com');
+    console.log('   Password: password123');
+    console.log('   Role: logistician');
+    console.log('\n   Email: admin@example.com');
+    console.log('   Password: password123');
+    console.log('   Role: admin (no company)');
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Seed failed:', error);
