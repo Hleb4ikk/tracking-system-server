@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppConfigModule } from './modules/configuration/appConfig.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CompanyModule } from './modules/company/company.module';
 import { InvitationModule } from './modules/invitation/invitation.module';
 import { MembershipModule } from './modules/membership/membership.module';
@@ -16,6 +18,8 @@ import { CargoModule } from './modules/cargo/cargo.module';
   imports: [
     AppConfigModule,
     AuthModule,
+    UserModule,
+    DashboardModule,
     CompanyModule,
     InvitationModule,
     MembershipModule,
