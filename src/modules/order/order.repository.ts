@@ -126,17 +126,17 @@ export class OrderRepository implements IOrderRepository {
             )
           ) FILTER (WHERE c.id IS NOT NULL), '[]'
         ) AS cargos,
-        COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'id', c.id,
-              'name',
-              'surname',
-              'email',
-              'phone'
-            )
-          ) FILTER (WHERE c.id IS NOT NULL), '[]'
-        ) AS reciever
+        (
+          SELECT jsonb_build_object(
+            'id', r.id, 
+            'name', r.name, 
+            'surname', r.surname, 
+            'email', r.email, 
+            'phone', r.phone
+        )
+        FROM recievers r 
+        WHERE r.id = o.reciever_id
+      ) AS reciever
        FROM orders o
        LEFT JOIN status_history sh ON o.id = sh.order_id
        LEFT JOIN cargos c ON o.id = c.order_id
