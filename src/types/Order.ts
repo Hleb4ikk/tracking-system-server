@@ -1,4 +1,5 @@
 import { Cargo } from './Cargo';
+import { Reciever } from './Reciever';
 
 export interface Order {
   id: string;
@@ -25,4 +26,5 @@ export interface OrderWithHistory extends Order {
 export interface OrderWithDetails extends Order {
   status_history: StatusHistory[];
   cargos: Cargo[];
+  reciever: Reciever;
 }
