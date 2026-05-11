@@ -13,6 +13,7 @@ import {
 import { PostgresService } from '../database/postgres.service';
 import { SupplyGraph } from 'src/classes/SupplyChainGraph';
 import { SupplyNodeConnection } from 'src/types/SupplyNodeConnection';
+import { ClientBase } from 'pg';
 
 @Injectable()
 export class SupplyChainRepository implements ISupplyChainRepository {
@@ -62,7 +63,8 @@ export class SupplyChainRepository implements ISupplyChainRepository {
               json_build_object(
                   'id', snc.id,
                   'start_node', to_jsonb(sn_start),
-                  'destination_node', to_jsonb(sn_destination)
+                  'destination_node', to_jsonb(sn_destination),
+                  'distance', snc.distance
               )
           ) FILTER (WHERE snc.id IS NOT NULL), '[]') AS supply_node_connections
       FROM supply_chains sc
@@ -91,10 +93,12 @@ export class SupplyChainRepository implements ISupplyChainRepository {
     companyId: string,
     createSupplyChainDto: CreateSupplyChainDto,
   ): Promise<SupplyChainWithGraph> {
-    try {
-      await this.postgresService.query('BEGIN;');
+    const client = await this.postgresService.getClient();
 
-      const result = await this.postgresService.query<SupplyChain>(
+    try {
+      await client.query('BEGIN;');
+
+      const result = await client.query<SupplyChain>(
         `INSERT INTO supply_chains(title, description, company_id) VALUES ($1, $2, $3) RETURNING *;`,
         [
           createSupplyChainDto.title,
@@ -112,11 +116,12 @@ export class SupplyChainRepository implements ISupplyChainRepository {
         createSupplyChainDto.supply_node_connections.length > 0
       ) {
         connections = await this.createConnections(
+          client,
           supplyChain.id,
           createSupplyChainDto.supply_node_connections,
         );
       }
-      await this.postgresService.query('COMMIT;');
+      await client.query('COMMIT;');
       const supplyChainWithGraph: SupplyChainWithGraph = {
         ...supplyChain,
         supplyGraph: new SupplyGraph(connections),
@@ -124,8 +129,10 @@ export class SupplyChainRepository implements ISupplyChainRepository {
 
       return supplyChainWithGraph;
     } catch (error) {
-      await this.postgresService.query('ROLLBACK;');
+      await client.query('ROLLBACK;');
       throw error;
+    } finally {
+      client.release();
     }
   }
 
@@ -133,10 +140,17 @@ export class SupplyChainRepository implements ISupplyChainRepository {
     supplyChainId: string,
     updateSupplyChainDto: UpdateSupplyChainDto,
   ): Promise<Partial<SupplyChainWithGraph>> {
-    try {
-      await this.postgresService.query('BEGIN;');
+    const client = await this.postgresService.getClient();
 
-      await this.postgresService.query(
+    try {
+      await client.query('BEGIN;');
+
+      await client.query(
+        'SELECT 1 FROM supply_chains WHERE id = $1 FOR UPDATE',
+        [supplyChainId],
+      );
+
+      await client.query(
         `UPDATE supply_chains SET 
             title = COALESCE($1, title), 
             description = COALESCE($2, description)
@@ -150,8 +164,8 @@ export class SupplyChainRepository implements ISupplyChainRepository {
       );
       let connections: SupplyNodeConnection[] = [];
       if (updateSupplyChainDto.supply_node_connections !== undefined) {
-        await this.postgresService.query(
-          `DELETE FROM supply_node_connections WHERE supply_chain_id = $1;`,
+        await client.query(
+          `DELETE FROM supply_node_connections WHERE supply_chain_id = $1 RETURNING *;`,
           [supplyChainId],
         );
 
@@ -160,13 +174,14 @@ export class SupplyChainRepository implements ISupplyChainRepository {
           updateSupplyChainDto.supply_node_connections.length > 0
         ) {
           connections = await this.createConnections(
+            client,
             supplyChainId,
             updateSupplyChainDto.supply_node_connections,
           );
         }
       }
 
-      await this.postgresService.query('COMMIT;');
+      await client.query('COMMIT;');
       const { supply_node_connections: _, ...supplyChain } =
         updateSupplyChainDto;
       return {
@@ -174,12 +189,15 @@ export class SupplyChainRepository implements ISupplyChainRepository {
         supplyGraph: connections ? new SupplyGraph(connections) : undefined,
       };
     } catch (error) {
-      await this.postgresService.query('ROLLBACK;');
+      await client.query('ROLLBACK;');
       throw error;
+    } finally {
+      client.release();
     }
   }
 
   private async createConnections(
+    client: ClientBase,
     supplyChainId: string,
     connections: {
       startNodeId: string;
@@ -215,7 +233,7 @@ export class SupplyChainRepository implements ISupplyChainRepository {
       paramIndex += 4;
     }
 
-    const result = await this.postgresService.query<SupplyNodeConnection>(
+    const result = await client.query<SupplyNodeConnection>(
       `WITH inserted_rows AS (
         INSERT INTO supply_node_connections (supply_chain_id, start_node_id, destination_node_id, distance)
         VALUES ${values.join(', ')}

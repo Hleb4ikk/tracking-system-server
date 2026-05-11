@@ -1,31 +1,38 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Client } from 'pg';
+import { Pool, PoolClient, QueryResultRow } from 'pg'; // Используем Pool вместо Client
 import { AppConfigService } from '../configuration/appConfig.service';
 
 @Injectable()
-export class PostgresService extends Client implements OnModuleInit {
+export class PostgresService implements OnModuleInit {
   private readonly logger = new Logger(PostgresService.name);
+  private pool: Pool;
 
   constructor(private readonly app: AppConfigService) {
-    super({
+    this.pool = new Pool({
       host: app.database.host,
       port: app.database.port,
       database: app.database.name,
       password: app.database.password,
       user: app.database.username,
       ssl: app.database.ssl,
-    });
-    this.on('error', (error) => {
-      this.logger.error(error.message);
+      max: 20,
     });
   }
 
   async onModuleInit() {
     try {
-      await this.connect();
-      this.logger.log('Connected successfully');
+      await this.pool.query('SELECT NOW()');
+      this.logger.log('Database pool initialized');
     } catch (error: any) {
-      this.logger.error(error.message || 'Failed to connect database');
+      this.logger.error('Failed to connect database', error.stack);
     }
+  }
+
+  async query<T extends QueryResultRow>(text: string, params?: any[]) {
+    return this.pool.query<T>(text, params);
+  }
+
+  async getClient(): Promise<PoolClient> {
+    return await this.pool.connect();
   }
 }

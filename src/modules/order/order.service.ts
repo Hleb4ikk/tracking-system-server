@@ -8,7 +8,7 @@ import {
 import { CompanyRepository } from '../company/company.repository';
 import { UserRepository } from '../user/user.repository';
 import { RecieverRepository } from '../reciever/reciever.repository';
-import { Order, OrderWithHistory } from 'src/types/Order';
+import { Order, OrderWithHistory, OrderWithDetails } from 'src/types/Order';
 
 @Injectable()
 export class OrderService {
@@ -57,8 +57,8 @@ export class OrderService {
   async findOrderById(
     companyId: string,
     orderId: string,
-  ): Promise<OrderWithHistory> {
-    const order = await this.orderRepository.findOrderWithHistoryById(orderId);
+  ): Promise<OrderWithDetails> {
+    const order = await this.orderRepository.findOrderWithDetailsById(orderId);
 
     if (!order || order.company_id !== companyId) {
       throw new NotFoundException("Order wasn't found.");

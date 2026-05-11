@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -16,8 +17,10 @@ import { CompanyRoles } from 'src/decorators/company-roles.decorator';
 import { ROLES } from 'src/enums/roles';
 import {
   createVehicleSchema,
+  updateVehicleSchema,
   vehicleQuerySchema,
   type CreateVehicleDto,
+  type UpdateVehicleDto,
   type VehicleQuery,
 } from 'src/schemas/vehicleSchemas';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
@@ -58,6 +61,23 @@ export class VehicleController {
     );
     return { message: 'Vehicle created successfully!', vehicle };
   }
+
+  @Patch(':id')
+  @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
+  async updateVehicle(
+    @CurrentUser('company_id') companyId: string,
+    @Param('id', ParseUUIDPipe) vehicleId: string,
+    @Body(new ZodValidationPipe(updateVehicleSchema))
+    updateVehicleDto: UpdateVehicleDto,
+  ) {
+    const updatedFields = await this.vehicleService.updateVehicle(
+      companyId,
+      vehicleId,
+      updateVehicleDto,
+    );
+    return { message: 'Vehicle was updated successfully!', updatedFields };
+  }
+
   @Delete(':id')
   @CompanyRoles([ROLES.CO_FOUNDER, ROLES.LOGISTICIAN])
   async deleteVehicle(
